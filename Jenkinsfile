@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Pavankalyan29/Real-Time-Log-Analyzer.git'
+                git 'https://github.com/Pavankalyan29/Real-Time-Log-Analyzer'
             }
         }
 
