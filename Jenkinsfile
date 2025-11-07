@@ -26,6 +26,11 @@ pipeline {
                         EC2_IP=$(terraform -chdir=terraform output -raw public_ip)
                         echo "Deploying ELK stack on $EC2_IP"
 
+                        # --- Windows permission fix for the SSH key ---
+                        icacls "$SSH_KEY" /inheritance:r
+                        icacls "$SSH_KEY" /grant:r "SYSTEM:R"
+                        icacls "$SSH_KEY" /grant:r "Administrators:R"
+
                         scp -o StrictHostKeyChecking=no -i "$SSH_KEY" docker-compose.yml ec2-user@$EC2_IP:/home/ec2-user/
                         scp -o StrictHostKeyChecking=no -i "$SSH_KEY" logstash.conf ec2-user@$EC2_IP:/home/ec2-user/
                         scp -o StrictHostKeyChecking=no -i "$SSH_KEY" -r sample-app ec2-user@$EC2_IP:/home/ec2-user/
