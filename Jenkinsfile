@@ -21,16 +21,18 @@ pipeline {
 
         stage('Deploy ELK Stack') {
             steps {
-                sh '''
-                EC2_IP=$(terraform -chdir=terraform output -raw public_ip)
-                echo "Deploying ELK stack on $EC2_IP"
+                withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-ssh-key', keyFileVariable: 'SSH_KEY')]) {
+                    sh '''
+                        EC2_IP=$(terraform -chdir=terraform output -raw public_ip)
+                        echo "Deploying ELK stack on $EC2_IP"
 
-                scp -o StrictHostKeyChecking=no -i ~/.ssh/your-key.pem docker-compose.yml ec2-user@$EC2_IP:/home/ec2-user/
-                scp -o StrictHostKeyChecking=no -i ~/.ssh/your-key.pem logstash.conf ec2-user@$EC2_IP:/home/ec2-user/
-                scp -o StrictHostKeyChecking=no -i ~/.ssh/your-key.pem -r sample-app ec2-user@$EC2_IP:/home/ec2-user/
+                        scp -o StrictHostKeyChecking=no -i $SSH_KEY docker-compose.yml ec2-user@$EC2_IP:/home/ec2-user/
+                        scp -o StrictHostKeyChecking=no -i $SSH_KEY logstash.conf ec2-user@$EC2_IP:/home/ec2-user/
+                        scp -o StrictHostKeyChecking=no -i $SSH_KEY -r sample-app ec2-user@$EC2_IP:/home/ec2-user/
 
-                ssh -o StrictHostKeyChecking=no -i ~/.ssh/your-key.pem ec2-user@$EC2_IP "sudo docker-compose up -d --build"
-                '''
+                        ssh -o StrictHostKeyChecking=no -i $SSH_KEY ec2-user@$EC2_IP "sudo docker-compose up -d --build"
+                    '''
+                }
             }
         }
 
