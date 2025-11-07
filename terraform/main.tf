@@ -81,6 +81,11 @@ resource "aws_instance" "elk_instance" {
     systemctl enable docker
     curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     chmod +x /usr/local/bin/docker-compose
+
+    # Add docker-compose to PATH for all users
+    ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+
     # Required for Elasticsearch
     sysctl -w vm.max_map_count=262144
     echo "vm.max_map_count=262144" >> /etc/sysctl.conf
