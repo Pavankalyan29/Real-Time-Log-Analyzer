@@ -92,6 +92,11 @@ resource "aws_instance" "elk_instance" {
     # Required for Elasticsearch
     sysctl -w vm.max_map_count=262144
     echo "vm.max_map_count=262144" >> /etc/sysctl.conf
+
+    # ---------------------------
+    # Add ec2-user to Docker group
+    # ---------------------------
+    usermod -aG docker ec2-user
   EOF
 
   tags = {
