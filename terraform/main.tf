@@ -85,6 +85,9 @@ resource "aws_instance" "elk_instance" {
     # Add docker-compose to PATH for all users
     ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
+    # Verify Docker Compose installation
+    docker-compose --version > /home/ec2-user/compose-version.log 2>&1
+
 
     # Required for Elasticsearch
     sysctl -w vm.max_map_count=262144
