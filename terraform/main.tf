@@ -75,29 +75,27 @@ resource "aws_instance" "elk_instance" {
   # 🧠 user_data runs once on boot to setup Docker + Compose + ELK
   user_data = <<-EOF
     #!/bin/bash
+    set -e
     yum update -y
-    amazon-linux-extras install docker -y
-    systemctl start docker
-    systemctl enable docker
-    curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    chmod +x /usr/local/bin/docker-compose
 
-    # Add docker-compose to PATH for all users
+    # Install Docker
+    amazon-linux-extras install docker -y || yum install -y docker
+    systemctl enable docker
+    systemctl start docker
+
+    # Install Docker Compose (v2, newer + supported)
+    curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
     ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
-    # Verify Docker Compose installation
-    docker-compose --version > /home/ec2-user/compose-version.log 2>&1
+    # Verify installation
+    docker-compose version || echo "Docker Compose not installed properly"
 
-
-    # Required for Elasticsearch
+    # Set kernel param for Elasticsearch
     sysctl -w vm.max_map_count=262144
     echo "vm.max_map_count=262144" >> /etc/sysctl.conf
-
-    # ---------------------------
-    # Add ec2-user to Docker group
-    # ---------------------------
-    usermod -aG docker ec2-user
   EOF
+
 
   tags = {
     Name = "RealTime-Log-Analyzer"
