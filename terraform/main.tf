@@ -88,12 +88,22 @@ resource "aws_instance" "elk_instance" {
     chmod +x /usr/local/bin/docker-compose
     ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
+    # Create 2GB Swap Memory (needed for ELK on t3.micro)
+    fallocate -l 2G /swapfile
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
+
     # Verify installation
-    docker-compose version || echo "Docker Compose not installed properly"
+    # docker-compose version || echo "Docker Compose not installed properly"
 
     # Set kernel param for Elasticsearch
     sysctl -w vm.max_map_count=262144
     echo "vm.max_map_count=262144" >> /etc/sysctl.conf
+
+    # Optional: Restart to ensure stability after setup
+    (sleep 15 && reboot) &
   EOF
 
 
