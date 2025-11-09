@@ -113,15 +113,15 @@ resource "aws_instance" "elk_instance" {
 }
 
 # ✅ Output public IP
-output "elk_public_ip" {
-  value = aws_instance.elk_instance.public_ip
-  description = "Public IP of the ELK EC2 instance"
-}
+# output "elk_public_ip" {
+#   value = aws_instance.elk_instance.public_ip
+#   description = "Public IP of the ELK EC2 instance"
+# }
 
-output "elk_ssh_command" {
-  value = "ssh -i ${var.key_name}.pem ec2-user@${aws_instance.elk_instance.public_ip}"
-}
+# output "elk_ssh_command" {
+#   value = "ssh -i ${var.key_name}.pem ec2-user@${aws_instance.elk_instance.public_ip}"
+# }
 
-output "kibana_url" {
-  value = "http://${aws_instance.elk_instance.public_ip}:5601"
-}
+# output "kibana_url" {
+#   value = "http://${aws_instance.elk_instance.public_ip}:5601"
+# }
