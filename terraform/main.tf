@@ -199,6 +199,7 @@ resource "aws_instance" "elk_instance" {
   key_name                    = var.key_name
   vpc_security_group_ids      = [aws_security_group.elk_sg.id]
   associate_public_ip_address = true
+  iam_instance_profile        = aws_iam_instance_profile.ec2_instance_profile.name
 
   # 🧠 user_data sets up Docker + Compose + pulls from ECR
   user_data = <<-EOF
@@ -214,6 +215,9 @@ resource "aws_instance" "elk_instance" {
     chmod +x /usr/local/bin/docker-compose
     ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
+    # Install AWS CLI (so docker can authenticate using IAM role)
+    yum install -y awscli
+
     # Add 2GB swap for stability
     fallocate -l 2G /swapfile
     chmod 600 /swapfile
@@ -226,12 +230,7 @@ resource "aws_instance" "elk_instance" {
     echo "vm.max_map_count=262144" >> /etc/sysctl.conf
 
     # Install AWS CLI to pull from ECR
-    yum install -y awscli
-
-    # Authenticate Docker to ECR
-    REGION="${var.region}"
-    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-    aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+    # yum install -y awscli
 
     # Optional: Restart for clean environment
     (sleep 10 && reboot) &
