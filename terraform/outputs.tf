@@ -1,3 +1,8 @@
+output "ecr_repo_url" {
+  value = aws_ecr_repository.sample_app_repo.repository_url
+  description = "ECR Repository URL for Sample App"
+}
+
 output "public_ip" {
   value = aws_instance.elk_instance.public_ip
 }
