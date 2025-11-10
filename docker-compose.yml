@@ -83,7 +83,7 @@ services:
       - elk
 
   sample-app:
-    image: <AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/real-time-log-analyzer:latest
+    image: 108792016419.dkr.ecr.ap-south-1.amazonaws.com/real-time-log-analyzer:latest
     container_name: sample-app
     volumes:
       - ./sample-app/log:/app/log
