@@ -118,8 +118,6 @@ pipeline {
                         scp -o StrictHostKeyChecking=no -i "$SSH_KEY" docker-compose.yml ec2-user@$EC2_IP:/home/ec2-user/
                         scp -o StrictHostKeyChecking=no -i "$SSH_KEY" logstash.conf ec2-user@$EC2_IP:/home/ec2-user/
 
-                        // ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" ec2-user@$EC2_IP "sudo docker-compose up -d"
-
                         ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" ec2-user@$EC2_IP '
                           set -e
                           REGION="ap-south-1"
