@@ -210,10 +210,14 @@ resource "aws_instance" "elk_instance" {
     systemctl enable docker
     systemctl start docker
 
-    # Install Docker Compose
-    curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
-    chmod +x /usr/local/bin/docker-compose
-    ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+    # Install Docker Compose (v2 binary)
+    COMPOSE_PATH="/usr/local/bin/docker-compose"
+    if [ ! -f "$COMPOSE_PATH" ]; then
+      echo "Installing Docker Compose..."
+      curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o $COMPOSE_PATH
+      chmod +x $COMPOSE_PATH
+      ln -s $COMPOSE_PATH /usr/bin/docker-compose
+    fi
 
     # Install AWS CLI (so docker can authenticate using IAM role)
     yum install -y awscli
@@ -225,12 +229,18 @@ resource "aws_instance" "elk_instance" {
     swapon /swapfile
     echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
 
-    # Set Elasticsearch requirement
+    # Set kernel parameter for Elasticsearch
     sysctl -w vm.max_map_count=262144
     echo "vm.max_map_count=262144" >> /etc/sysctl.conf
 
-    # Install AWS CLI to pull from ECR
-    # yum install -y awscli
+    # Authenticate Docker to ECR (IAM role handles permissions)
+    REGION="${var.region}"
+    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+    aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
+    # Verify Docker installation
+    docker --version
+    docker-compose --version || echo "Docker Compose installation failed"
 
     # Optional: Restart for clean environment
     (sleep 10 && reboot) &
